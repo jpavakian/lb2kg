@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pounds to kilograms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --chalk: #E9ECEF;
+    --panel: #FFFFFF;
+    --iron: #1E232B;
+    --steel: #5E6875;
+    --rail: #C9CFD6;
+    --plate: #1D5FC4;
+    --plate-ink: #FFFFFF;
+    --ok: #1E8A4C;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --chalk: #15181D; --panel: #1E232B; --iron: #EDF0F3; --steel: #9AA4B1;
+      --rail: #39414C; --plate: #4C8BEA; --plate-ink: #0E1218; --ok: #4CC47F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --chalk: #15181D; --panel: #1E232B; --iron: #EDF0F3; --steel: #9AA4B1;
+    --rail: #39414C; --plate: #4C8BEA; --plate-ink: #0E1218; --ok: #4CC47F;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--chalk);
+    color: var(--iron);
+    font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px;
+    line-height: 1.45;
+    -webkit-tap-highlight-color: transparent;
+  }
+  main {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 28px 20px 40px;
+  }
+  h1 {
+    font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin: 0 0 18px;
+    color: var(--steel);
+    letter-spacing: 0.01em;
+  }
+
+  .readout {
+    background: var(--panel);
+    border-radius: 18px;
+    padding: 22px 22px 18px;
+  }
+  .kg {
+    font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+    font-weight: 800;
+    font-size: clamp(4.5rem, 24vw, 7.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .kg small {
+    font-size: 0.36em;
+    font-weight: 700;
+    color: var(--steel);
+  }
+  .lb {
+    margin-top: 10px;
+    font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+    font-weight: 500;
+    font-size: 1.6rem;
+    color: var(--steel);
+    font-variant-numeric: tabular-nums;
+  }
+  .lb strong { color: var(--iron); font-weight: 700; }
+
+  .copy {
+    margin-top: 18px;
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: var(--plate);
+    color: var(--plate-ink);
+    font: 600 1.05rem "Barlow", system-ui, sans-serif;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .copy.done { background: var(--ok); }
+  .copy:focus-visible, .step:focus-visible, .inc button:focus-visible {
+    outline: 3px solid var(--plate);
+    outline-offset: 3px;
+  }
+
+  /* Slider styled as a weight-stack rail */
+  .rail-wrap { margin: 30px 0 6px; }
+  .rail-row { display: flex; align-items: center; gap: 12px; }
+  .step {
+    flex: 0 0 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--rail);
+    background: var(--panel);
+    color: var(--iron);
+    font: 700 1.6rem/1 "Barlow Condensed", sans-serif;
+    cursor: pointer;
+  }
+  .step:active { background: var(--rail); }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    background: transparent;
+    margin: 0;
+    cursor: pointer;
+  }
+  input[type=range]:focus-visible { outline: 3px solid var(--plate); outline-offset: 4px; border-radius: 8px; }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 10px; border-radius: 5px;
+    background: linear-gradient(to right, var(--plate) 0 var(--fill, 0%), var(--rail) var(--fill, 0%) 100%);
+  }
+  input[type=range]::-moz-range-track { height: 10px; border-radius: 5px; background: var(--rail); }
+  input[type=range]::-moz-range-progress { height: 10px; border-radius: 5px; background: var(--plate); }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 34px; height: 34px; margin-top: -12px;
+    border-radius: 50%;
+    background: var(--iron);
+    border: 6px solid var(--panel);
+    box-shadow: 0 0 0 2px var(--iron);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--iron);
+    border: 6px solid var(--panel);
+    box-shadow: 0 0 0 2px var(--iron);
+  }
+  .scale {
+    display: flex; justify-content: space-between;
+    margin: 4px 64px 0;
+    font-size: 0.85rem; color: var(--steel);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .inc-label {
+    margin: 28px 0 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .inc {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .inc button {
+    border: 2px solid var(--rail);
+    background: var(--panel);
+    color: var(--iron);
+    border-radius: 10px;
+    padding: 12px 0;
+    font: 700 1.15rem/1 "Barlow Condensed", sans-serif;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+  .inc button[aria-pressed="true"] {
+    background: var(--iron);
+    border-color: var(--iron);
+    color: var(--panel);
+  }
+  .inc button span { font-weight: 500; font-size: 0.8em; }
+
+  .max-row {
+    margin-top: 26px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-size: 0.95rem; color: var(--steel);
+  }
+  .max-row select {
+    font: 600 1rem "Barlow", system-ui, sans-serif;
+    color: var(--iron);
+    background: var(--panel);
+    border: 2px solid var(--rail);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+  @media (prefers-reduced-motion: reduce) { .copy { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Machine pounds in kilograms</h1>
+
+  <section class="readout" aria-live="polite">
+    <div class="kg"><span id="kg">0</span><small>kg</small></div>
+    <div class="lb">from <strong id="lb">0</strong> lb</div>
+    <button class="copy" id="copy" type="button">Copy kg</button>
+  </section>
+
+  <div class="rail-wrap">
+    <div class="rail-row">
+      <button class="step" id="minus" type="button" aria-label="Decrease">−</button>
+      <input type="range" id="slider" min="0" max="300" step="5" value="100" aria-label="Weight in pounds">
+      <button class="step" id="plus" type="button" aria-label="Increase">+</button>
+    </div>
+    <div class="scale"><span>0</span><span id="scaleMax">300</span></div>
+  </div>
+
+  <div class="inc-label" id="incLabel">Step size</div>
+  <div class="inc" role="group" aria-labelledby="incLabel" id="inc">
+    <button type="button" data-step="0.5">0.5<span> lb</span></button>
+    <button type="button" data-step="1">1<span> lb</span></button>
+    <button type="button" data-step="2.5">2.5<span> lb</span></button>
+    <button type="button" data-step="5">5<span> lb</span></button>
+    <button type="button" data-step="10">10<span> lb</span></button>
+  </div>
+
+  <div class="max-row">
+    <label for="max">Slider range</label>
+    <select id="max">
+      <option value="200">0–200 lb</option>
+      <option value="300">0–300 lb</option>
+      <option value="500">0–500 lb</option>
+      <option value="1000">0–1000 lb</option>
+    </select>
+  </div>
+</main>
+
+<script>
+(function () {
+  var LB_TO_KG = 0.45359237;
+  var slider = document.getElementById('slider');
+  var kgEl = document.getElementById('kg');
+  var lbEl = document.getElementById('lb');
+  var copyBtn = document.getElementById('copy');
+  var incBtns = document.querySelectorAll('#inc button');
+  var maxSel = document.getElementById('max');
+  var scaleMax = document.getElementById('scaleMax');
+
+  var state = { step: 5, max: 300, lb: 100 };
+  try {
+    var saved = JSON.parse(localStorage.getItem('lb2kg') || 'null');
+    if (saved && typeof saved === 'object') {
+      if ([0.5, 1, 2.5, 5, 10].indexOf(saved.step) > -1) state.step = saved.step;
+      if ([200, 300, 500, 1000].indexOf(saved.max) > -1) state.max = saved.max;
+      if (typeof saved.lb === 'number' && saved.lb >= 0) state.lb = saved.lb;
+    }
+  } catch (e) {}
+
+  function save() {
+    try { localStorage.setItem('lb2kg', JSON.stringify(state)); } catch (e) {}
+  }
+  function fmt(n) {
+    return (Math.round(n * 100) / 100).toString();
+  }
+  function snap(v) {
+    v = Math.round(v / state.step) * state.step;
+    return Math.min(state.max, Math.max(0, +v.toFixed(2)));
+  }
+  function kgValue() { return fmt(state.lb * LB_TO_KG); }
+
+  function render() {
+    slider.max = state.max;
+    slider.step = state.step;
+    slider.value = state.lb;
+    slider.style.setProperty('--fill', (state.lb / state.max * 100) + '%');
+    scaleMax.textContent = state.max;
+    maxSel.value = String(state.max);
+    kgEl.textContent = kgValue();
+    lbEl.textContent = fmt(state.lb);
+    incBtns.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(+b.dataset.step === state.step));
+    });
+    copyBtn.classList.remove('done');
+    copyBtn.textContent = 'Copy ' + kgValue() + ' kg';
+  }
+
+  slider.addEventListener('input', function () {
+    state.lb = snap(parseFloat(slider.value));
+    render(); save();
+  });
+  document.getElementById('minus').addEventListener('click', function () {
+    state.lb = snap(state.lb - state.step); render(); save();
+  });
+  document.getElementById('plus').addEventListener('click', function () {
+    state.lb = snap(state.lb + state.step); render(); save();
+  });
+  incBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.step = +b.dataset.step;
+      state.lb = snap(state.lb);
+      render(); save();
+    });
+  });
+  maxSel.addEventListener('change', function () {
+    state.max = +maxSel.value;
+    state.lb = snap(state.lb);
+    render(); save();
+  });
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copied(ok) {
+    copyBtn.classList.toggle('done', ok);
+    copyBtn.textContent = ok ? 'Copied ' + kgValue() + ' kg' : 'Copy blocked — select the number above';
+  }
+  copyBtn.addEventListener('click', function () {
+    var text = kgValue() + ' kg';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { copied(true); },
+        function () { copied(fallbackCopy(text)); });
+    } else {
+      copied(fallbackCopy(text));
+    }
+  });
+
+  state.lb = snap(state.lb);
+  render();
+})();
+</script>
+</body>
+</html>
