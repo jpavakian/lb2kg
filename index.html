@@ -388,7 +388,7 @@
     copyBtn.textContent = ok ? 'Copied ' + kgValue() + ' kg' : 'Copy blocked — select the number above';
   }
   copyBtn.addEventListener('click', function () {
-    var text = kgValue() + ' kg';
+    var text = kgValue();
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () { copied(true); },
         function () { copied(fallbackCopy(text)); });
