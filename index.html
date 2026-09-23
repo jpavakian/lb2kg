@@ -85,7 +85,29 @@
     color: var(--steel);
     font-variant-numeric: tabular-nums;
   }
-  .lb strong { color: var(--iron); font-weight: 700; }
+  .lb {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-size: 1.25rem;
+  }
+  .lb-field {
+    display: flex; align-items: baseline; gap: 6px;
+    border: 2px solid var(--rail);
+    border-radius: 10px;
+    padding: 4px 12px;
+    background: var(--chalk);
+    cursor: text;
+  }
+  .lb-field:focus-within { border-color: var(--plate); }
+  .lb input {
+    width: 5.5ch;
+    border: 0; outline: 0; background: transparent;
+    color: var(--iron);
+    font: 700 1.9rem/1.1 "Barlow Condensed", "Arial Narrow", sans-serif;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    padding: 0;
+  }
+  .lb .unit { font-size: 1.25rem; color: var(--steel); }
 
   .copy {
     margin-top: 18px;
@@ -206,7 +228,14 @@
 
   <section class="readout" aria-live="polite">
     <div class="kg"><span id="kg">0</span><small>kg</small></div>
-    <div class="lb">from <strong id="lb">0</strong> lb</div>
+    <label class="lb" for="lbInput">
+      <span>Pounds</span>
+      <span class="lb-field">
+        <input id="lbInput" type="text" inputmode="decimal" enterkeyhint="done"
+               autocomplete="off" pattern="[0-9]*[.,]?[0-9]*" aria-label="Weight in pounds">
+        <span class="unit">lb</span>
+      </span>
+    </label>
     <button class="copy" id="copy" type="button">Copy kg</button>
   </section>
 
@@ -244,7 +273,8 @@
   var LB_TO_KG = 0.45359237;
   var slider = document.getElementById('slider');
   var kgEl = document.getElementById('kg');
-  var lbEl = document.getElementById('lb');
+  var lbInput = document.getElementById('lbInput');
+  var MAXES = [200, 300, 500, 1000];
   var copyBtn = document.getElementById('copy');
   var incBtns = document.querySelectorAll('#inc button');
   var maxSel = document.getElementById('max');
@@ -272,15 +302,15 @@
   }
   function kgValue() { return fmt(state.lb * LB_TO_KG); }
 
-  function render() {
+  function render(fromTyping) {
     slider.max = state.max;
     slider.step = state.step;
-    slider.value = state.lb;
-    slider.style.setProperty('--fill', (state.lb / state.max * 100) + '%');
+    slider.value = Math.min(state.lb, state.max);
+    slider.style.setProperty('--fill', (Math.min(state.lb, state.max) / state.max * 100) + '%');
     scaleMax.textContent = state.max;
     maxSel.value = String(state.max);
     kgEl.textContent = kgValue();
-    lbEl.textContent = fmt(state.lb);
+    if (!fromTyping) lbInput.value = fmt(state.lb);
     incBtns.forEach(function (b) {
       b.setAttribute('aria-pressed', String(+b.dataset.step === state.step));
     });
@@ -311,6 +341,31 @@
     render(); save();
   });
 
+  // Manual entry: exact value, not snapped to the step size
+  lbInput.addEventListener('focus', function () {
+    setTimeout(function () { lbInput.select(); }, 0);
+  });
+  lbInput.addEventListener('input', function () {
+    var clean = lbInput.value.replace(',', '.').replace(/[^0-9.]/g, '');
+    var parts = clean.split('.');
+    if (parts.length > 2) clean = parts[0] + '.' + parts.slice(1).join('');
+    if (clean !== lbInput.value) lbInput.value = clean;
+    var v = parseFloat(clean);
+    if (isNaN(v)) v = 0;
+    v = Math.min(v, 5000);
+    state.lb = +v.toFixed(2);
+    if (state.lb > state.max) {
+      for (var i = 0; i < MAXES.length; i++) {
+        if (MAXES[i] >= state.lb) { state.max = MAXES[i]; break; }
+      }
+    }
+    render(true); save();
+  });
+  lbInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') lbInput.blur();
+  });
+  lbInput.addEventListener('blur', function () { render(); });
+
   function fallbackCopy(text) {
     var ta = document.createElement('textarea');
     ta.value = text;
@@ -337,7 +392,6 @@
     }
   });
 
-  state.lb = snap(state.lb);
   render();
 })();
 </script>
