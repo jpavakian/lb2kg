@@ -4,7 +4,7 @@
 
 A small, phone-friendly converter for the gym. Many machines show their weight stacks in pounds; this page turns that number into kilograms as you slide or type.
 
-**Live:** https://YOUR-USERNAME.github.io/lb-to-kg/
+**Live:** https://jpavakian.github.io/lb-to-kg/
 
 ## Features
 
