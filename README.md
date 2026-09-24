@@ -4,21 +4,22 @@
 
 A small, phone-friendly converter for the gym. Many machines show their weight stacks in pounds; this page turns that number into kilograms as you slide or type.
 
-**Live:** https://jpavakian.github.io/lb-to-kg/
+**Live:** https://YOUR-USERNAME.github.io/lb-to-kg/
 
 ## Features
 
 - **Slider** to pick the weight on the machine, with − / + buttons for single steps
 - **Step sizes** of 0.5, 1, 2.5, 5 or 10 lb, so the slider matches the machine's increments
 - **Manual entry**: tap the pound field to type an exact weight (opens the number pad on phones)
-- **One-tap copy** of the result, e.g. `45.36 kg`
+- **One-tap copy** of just the number, e.g. `45.36`, ready to paste into another app's field
+- **Round to whole kg** switch: shows and copies the nearest whole number, e.g. `45`
 - **Adjustable range**: 0–200, 300, 500 or 1000 lb, for plate-loaded machines too
-- **Remembers** your step size, range and last weight on your device
+- **Remembers** your step size, range, rounding choice and last weight on your device
 - Light and dark mode, follows your phone's setting
 
 ## How it converts
 
-1 lb = 0.45359237 kg (the exact international definition). Results are rounded to two decimals.
+1 lb = 0.45359237 kg (the exact international definition). Results are rounded to two decimals, or to the nearest whole kilogram when rounding is switched on.
 
 ## Files
 

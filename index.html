@@ -224,7 +224,30 @@
     border-radius: 8px;
     padding: 6px 10px;
   }
-  @media (prefers-reduced-motion: reduce) { .copy { transition: none; } }
+  .switch {
+    position: relative; flex: 0 0 auto;
+    width: 52px; height: 30px;
+  }
+  .switch input {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    margin: 0; opacity: 0; cursor: pointer;
+  }
+  .switch .track {
+    position: absolute; inset: 0; border-radius: 15px;
+    background: var(--rail); transition: background-color .15s;
+    pointer-events: none;
+  }
+  .switch .track::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--panel); transition: transform .15s;
+  }
+  .switch input:checked + .track { background: var(--plate); }
+  .switch input:checked + .track::after { transform: translateX(22px); }
+  .switch input:focus-visible + .track { outline: 3px solid var(--plate); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    .copy, .switch .track, .switch .track::after { transition: none; }
+  }
 </style>
 </head>
 <body>
@@ -271,6 +294,14 @@
       <option value="1000">0–1000 lb</option>
     </select>
   </div>
+
+  <div class="max-row">
+    <label for="round">Round to whole kg</label>
+    <span class="switch">
+      <input type="checkbox" id="round" role="switch">
+      <span class="track"></span>
+    </span>
+  </div>
 </main>
 
 <script>
@@ -284,14 +315,16 @@
   var incBtns = document.querySelectorAll('#inc button');
   var maxSel = document.getElementById('max');
   var scaleMax = document.getElementById('scaleMax');
+  var roundEl = document.getElementById('round');
 
-  var state = { step: 5, max: 300, lb: 100 };
+  var state = { step: 5, max: 300, lb: 100, round: false };
   try {
     var saved = JSON.parse(localStorage.getItem('lb2kg') || 'null');
     if (saved && typeof saved === 'object') {
       if ([0.5, 1, 2.5, 5, 10].indexOf(saved.step) > -1) state.step = saved.step;
       if ([200, 300, 500, 1000].indexOf(saved.max) > -1) state.max = saved.max;
       if (typeof saved.lb === 'number' && saved.lb >= 0) state.lb = saved.lb;
+      if (typeof saved.round === 'boolean') state.round = saved.round;
     }
   } catch (e) {}
 
@@ -305,7 +338,10 @@
     v = Math.round(v / state.step) * state.step;
     return Math.min(state.max, Math.max(0, +v.toFixed(2)));
   }
-  function kgValue() { return fmt(state.lb * LB_TO_KG); }
+  function kgValue() {
+    var kg = state.lb * LB_TO_KG;
+    return state.round ? String(Math.round(kg)) : fmt(kg);
+  }
 
   function render(fromTyping) {
     slider.max = state.max;
@@ -314,6 +350,7 @@
     slider.style.setProperty('--fill', (Math.min(state.lb, state.max) / state.max * 100) + '%');
     scaleMax.textContent = state.max;
     maxSel.value = String(state.max);
+    roundEl.checked = state.round;
     kgEl.textContent = kgValue();
     if (!fromTyping) lbInput.value = fmt(state.lb);
     incBtns.forEach(function (b) {
@@ -343,6 +380,11 @@
   maxSel.addEventListener('change', function () {
     state.max = +maxSel.value;
     state.lb = snap(state.lb);
+    render(); save();
+  });
+
+  roundEl.addEventListener('change', function () {
+    state.round = roundEl.checked;
     render(); save();
   });
 
